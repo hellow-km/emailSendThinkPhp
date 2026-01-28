@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>用户登录系统</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+      }
+
+      .login-container {
+        width: 100%;
+        max-width: 450px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+      }
+
+      .login-header {
+        background: linear-gradient(to right, #667eea, #764ba2);
+        color: white;
+        padding: 40px 30px;
+        text-align: center;
+      }
+
+      .login-header h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .login-header h1::before {
+        content: "";
+        font-size: 32px;
+      }
+
+      .login-header p {
+        opacity: 0.9;
+        font-size: 15px;
+        margin-top: 5px;
+      }
+
+      .login-body {
+        padding: 40px 35px;
+      }
+
+      .login-type-toggle {
+        display: flex;
+        background: #f5f5f5;
+        border-radius: 12px;
+        padding: 6px;
+        margin-bottom: 25px;
+      }
+
+      .login-type-btn {
+        flex: 1;
+        padding: 14px;
+        text-align: center;
+        border: none;
+        background: transparent;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 500;
+        color: #666;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .login-type-btn::before {
+        font-size: 18px;
+      }
+
+      .login-type-btn[data-type="phone"]::before {
+        content: "";
+      }
+
+      .login-type-btn[data-type="email"]::before {
+        content: "";
+      }
+
+      .login-type-btn.active {
+        background: white;
+        color: #667eea;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .form-group {
+        margin-bottom: 25px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #555;
+        font-weight: 500;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .form-group label::before {
+        font-size: 16px;
+      }
+
+      #phone-label::before {
+        content: "";
+      }
+
+      #email-label::before {
+        content: "";
+      }
+
+      #code-label::before {
+        content: "";
+      }
+
+      .input-with-icon {
+        position: relative;
+      }
+
+      .input-with-icon::before {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 18px;
+        color: #777;
+        z-index: 1;
+      }
+
+      .phone-input::before {
+        content: "";
+      }
+
+      .email-input::before {
+        content: "";
+      }
+
+      .code-input::before {
+        content: "";
+      }
+
+      .input-with-icon input {
+        width: 100%;
+        padding: 15px 15px 15px 50px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+      }
+
+      .input-with-icon input:focus {
+        border-color: #667eea;
+        background: white;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .input-with-icon input.error {
+        border-color: #ff4757;
+        background: #fff5f5;
+      }
+
+      .error-message {
+        color: #ff4757;
+        font-size: 13px;
+        margin-top: 6px;
+        display: none;
+      }
+
+      .verification-group {
+        display: flex;
+        gap: 12px;
+      }
+
+      .verification-group .input-with-icon {
+        flex: 1;
+      }
+
+      .get-code-btn {
+        padding: 0 22px;
+        background: linear-gradient(to right, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        font-weight: 500;
+      }
+
+      .get-code-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+
+      .get-code-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .remember-forgot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 25px 0 30px;
+        font-size: 14px;
+      }
+
+      .remember-me {
+        display: flex;
+        align-items: center;
+      }
+
+      .remember-me input {
+        margin-right: 8px;
+        width: 18px;
+        height: 18px;
+        accent-color: #667eea;
+      }
+
+      .forgot-password {
+        color: #667eea;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .forgot-password::before {
+        content: "";
+      }
+
+      .forgot-password:hover {
+        text-decoration: underline;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(to right, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .submit-btn::before {
+        content: "";
+        font-size: 18px;
+      }
+
+      .submit-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      .submit-btn:active {
+        transform: translateY(0);
+      }
+
+      .social-login {
+        margin-top: 30px;
+        text-align: center;
+      }
+
+      .social-login p {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 15px;
+        position: relative;
+      }
+
+      .social-login p::before,
+      .social-login p::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 30%;
+        height: 1px;
+        background: #eee;
+      }
+
+      .social-login p::before {
+        left: 0;
+      }
+
+      .social-login p::after {
+        right: 0;
+      }
+
+      .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+      }
+
+      .social-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+      }
+
+      .social-icon:hover {
+        transform: translateY(-3px) scale(1.1);
+      }
+
+      .social-icon.wechat {
+        background: #09bb07;
+        color: white;
+      }
+
+      .social-icon.wechat::before {
+        content: "";
+      }
+
+      .social-icon.qq {
+        background: #12b7f5;
+        color: white;
+      }
+
+      .social-icon.qq::before {
+        content: "🐧";
+      }
+
+      .social-icon.weibo {
+        background: #e6162d;
+        color: white;
+      }
+
+      .social-icon.weibo::before {
+        content: "";
+      }
+
+      .signup-link {
+        text-align: center;
+        margin-top: 30px;
+        color: #666;
+        font-size: 14px;
+      }
+
+      .signup-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        margin-left: 5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .signup-link a::before {
+        content: "";
+      }
+
+      .signup-link a:hover {
+        text-decoration: underline;
+      }
+
+      /* 响应式设计 */
+      @media (max-width: 480px) {
+        .login-container {
+          max-width: 100%;
+          border-radius: 15px;
+        }
+
+        .login-header {
+          padding: 30px 20px;
+        }
+
+        .login-body {
+          padding: 30px 25px;
+        }
+
+        .verification-group {
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        .get-code-btn {
+          padding: 12px;
+        }
+
+        .remember-forgot {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+        }
+
+        .social-icons {
+          gap: 15px;
+        }
+
+        .social-icon {
+          width: 45px;
+          height: 45px;
+          font-size: 22px;
+        }
+      }
+
+      /* 动画效果 */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .login-container {
+        animation: fadeIn 0.5s ease-out;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="login-header">
+        <h1>登记用户</h1>
+      </div>
+
+      <div class="login-body">
+        <!-- 登录方式切换 -->
+        <div class="login-type-toggle">
+          <button class="login-type-btn active" data-type="phone" type="button">
+            手机登录
+          </button>
+          <button class="login-type-btn" data-type="email" type="button">
+            邮箱登录
+          </button>
+        </div>
+
+        <!-- 登录表单 -->
+        <form class="login-form" id="loginForm">
+          <!-- 手机登录 -->
+          <div class="form-group phone-form" style="display: block">
+            <label id="phone-label">手机号码</label>
+            <div class="input-with-icon phone-input">
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                placeholder="请输入11位手机号码"
+                maxlength="11"
+              />
+            </div>
+            <div class="error-message" id="phone-error">
+              请输入正确的手机号码
+            </div>
+          </div>
+
+          <!-- 邮箱登录 -->
+          <div class="form-group email-form" style="display: none">
+            <label id="email-label">邮箱地址</label>
+            <div class="input-with-icon email-input">
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="请输入您的邮箱地址"
+              />
+            </div>
+            <div class="error-message" id="email-error">
+              请输入正确的邮箱地址
+            </div>
+          </div>
+
+          <!-- 验证码 -->
+          <div class="form-group">
+            <label id="code-label">验证码</label>
+            <div class="verification-group">
+              <div class="input-with-icon code-input">
+                <input
+                  type="text"
+                  id="code"
+                  name="code"
+                  placeholder="请输入6位验证码"
+                  maxlength="6"
+                />
+              </div>
+              <button type="button" class="get-code-btn" id="getCodeBtn">
+                获取验证码
+              </button>
+            </div>
+            <div class="error-message" id="code-error">请输入6位验证码</div>
+          </div>
+
+          <!-- 记住我和忘记密码 -->
+          <!-- <div class="remember-forgot">
+            <div class="remember-me">
+              <input type="checkbox" id="remember" name="remember" />
+              <label for="remember">记住我</label>
+            </div>
+            <a href="#" class="forgot-password">忘记密码？</a>
+          </div> -->
+
+          <!-- 提交按钮 -->
+          <button type="submit" class="submit-btn">立即注册</button>
+        </form>
+
+        <!-- 社交登录 -->
+        <!-- <div class="social-login">
+          <p>其他登录方式</p>
+          <div class="social-icons">
+            <a href="#" class="social-icon wechat" title="微信登录"></a>
+            <a href="#" class="social-icon qq" title="QQ登录"></a>
+            <a href="#" class="social-icon weibo" title="微博登录"></a>
+          </div>
+        </div> -->
+
+        <!-- 注册链接 -->
+        <!-- <div class="signup-link">
+          还没有账户？
+          <a href="#">立即注册</a>
+        </div> -->
+      </div>
+    </div>
+
+    <script>
+      let code = "";
+      document.addEventListener("DOMContentLoaded", function () {
+        // 获取DOM元素
+        const phoneLoginBtn = document.querySelector(
+          '.login-type-btn[data-type="phone"]',
+        );
+        const emailLoginBtn = document.querySelector(
+          '.login-type-btn[data-type="email"]',
+        );
+        const phoneForm = document.querySelector(".phone-form");
+        const emailForm = document.querySelector(".email-form");
+        const phoneInput = document.getElementById("phone");
+        const emailInput = document.getElementById("email");
+        const codeInput = document.getElementById("code");
+        const getCodeBtn = document.getElementById("getCodeBtn");
+        const loginForm = document.getElementById("loginForm");
+
+        // 切换登录方式
+        phoneLoginBtn.addEventListener("click", function () {
+          phoneLoginBtn.classList.add("active");
+          emailLoginBtn.classList.remove("active");
+          phoneForm.style.display = "block";
+          emailForm.style.display = "none";
+          clearErrors();
+        });
+
+        emailLoginBtn.addEventListener("click", function () {
+          emailLoginBtn.classList.add("active");
+          phoneLoginBtn.classList.remove("active");
+          emailForm.style.display = "block";
+          phoneForm.style.display = "none";
+          clearErrors();
+        });
+
+        // 发送验证码
+        function sendCode(type, target) {
+          fetch("/index/sendCode", {
+            credentials: "include",
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: `name=${encodeURIComponent(document.title)}&orign=${encodeURIComponent(location.host)}&type=${type}&target=${encodeURIComponent(target)}`,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.code === 200) {
+                console.log(data.msg);
+                // 如果是开发模式，显示验证码
+                if (data.data && data.data.code) {
+                  code = data.data.code;
+                }
+                // 开始倒计时
+                startCountdown();
+              } else {
+                alert(data.msg);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              console.log("请求失败，请检查网络");
+            });
+        }
+
+        // 表单验证
+        function validatePhone() {
+          const phone = phoneInput.value.trim();
+          const phoneRegex = /^1[3-9]\d{9}$/;
+          const isValid = phoneRegex.test(phone);
+          toggleError("phone-error", !isValid && phone.length > 0);
+          return isValid;
+        }
+
+        function validateEmail() {
+          const email = emailInput.value.trim();
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          const isValid = emailRegex.test(email);
+          toggleError("email-error", !isValid && email.length > 0);
+          return isValid;
+        }
+
+        function validateCode() {
+          const code = codeInput.value.trim();
+          const isValid = code.length === 6 && /^\d+$/.test(code);
+          toggleError("code-error", !isValid && code.length > 0);
+          return isValid;
+        }
+
+        function toggleError(errorId, show) {
+          const errorElement = document.getElementById(errorId);
+          const inputElement = errorId.includes("phone")
+            ? phoneInput
+            : errorId.includes("email")
+              ? emailInput
+              : codeInput;
+
+          if (show) {
+            errorElement.style.display = "block";
+            inputElement.classList.add("error");
+          } else {
+            errorElement.style.display = "none";
+            inputElement.classList.remove("error");
+          }
+        }
+
+        function clearErrors() {
+          document.querySelectorAll(".error-message").forEach((el) => {
+            el.style.display = "none";
+          });
+          document.querySelectorAll("input").forEach((el) => {
+            el.classList.remove("error");
+          });
+        }
+
+        // 输入验证
+        phoneInput.addEventListener("input", validatePhone);
+        emailInput.addEventListener("input", validateEmail);
+        codeInput.addEventListener("input", validateCode);
+
+        // 获取验证码
+        getCodeBtn.addEventListener("click", function () {
+          let isValid = false;
+
+          if (phoneForm.style.display === "block") {
+            // 手机登录
+            isValid = validatePhone();
+            if (!isValid) return;
+
+            const phone = phoneInput.value.trim();
+            sendCode("phone", phone);
+            console.log("发送验证码到手机:", phone);
+          } else {
+            // 邮箱登录
+            isValid = validateEmail();
+            if (!isValid) return;
+
+            const email = emailInput.value.trim();
+            sendCode("email", email);
+            console.log("发送验证码到邮箱:", email);
+          }
+
+          // 倒计时逻辑
+          let countdown = 10;
+          getCodeBtn.disabled = true;
+          getCodeBtn.textContent = `${countdown}秒后重试`;
+          getCodeBtn.classList.add("disabled");
+
+          const timer = setInterval(() => {
+            countdown--;
+            getCodeBtn.textContent = `${countdown}秒后重试`;
+
+            if (countdown <= 0) {
+              clearInterval(timer);
+              getCodeBtn.disabled = false;
+              getCodeBtn.textContent = "获取验证码";
+              getCodeBtn.classList.remove("disabled");
+            }
+          }, 1000);
+        });
+
+        // 表单提交
+        loginForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+          const submitBtn = document.querySelector(".submit-btn");
+          submitBtn.disabled = true;
+          let isValid = false;
+          let formData = new FormData();
+
+          if (phoneForm.style.display === "block") {
+            // 手机登录
+            isValid = validatePhone();
+            if (!isValid) return;
+
+            formData.append("phone", phoneInput.value.trim());
+            formData.append("code", codeInput.value.trim());
+            console.log("手机登录数据:", {
+              phone: phoneInput.value.trim(),
+              code: codeInput.value.trim(),
+            });
+          } else {
+            // 邮箱登录
+            isValid = validateEmail();
+            if (!isValid) return;
+
+            formData.append("email", emailInput.value.trim());
+            formData.append("code", codeInput.value.trim());
+          }
+
+          if (!validateCode()) {
+            submitBtn.disabled = false;
+            alert("验证码格式错误");
+            return;
+          }
+
+          fetch("/index/loginEmail", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: `name=${encodeURIComponent(document.title)}&orign=${encodeURIComponent(location.host)}&email=${encodeURIComponent(emailInput.value.trim())}&code=${encodeURIComponent(codeInput.value.trim())}`,
+          })
+            .then((res) => res.json())
+            .then((res) => {
+              submitBtn.disabled = false;
+              if (res.code === 200) {
+                console.log("登录成功", res.data);
+                alert("登录成功");
+              } else {
+                alert(res.msg);
+              }
+            })
+            .catch((err) => {
+              submitBtn.disabled = false;
+              console.error(err);
+              alert("请求失败");
+            });
+        });
+
+        // 社交登录
+        document.querySelectorAll(".social-icon").forEach((icon) => {
+          icon.addEventListener("click", function (e) {
+            e.preventDefault();
+            const platform = this.classList.contains("wechat")
+              ? "微信"
+              : this.classList.contains("qq")
+                ? "QQ"
+                : "微博";
+            console.log(`即将通过${platform}登录\n（演示功能）`);
+          });
+        });
+
+        // 忘记密码
+        document
+          .querySelector(".forgot-password")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+            console.log("密码重置功能正在开发中，敬请期待！");
+          });
+
+        // 注册链接
+        document
+          .querySelector(".signup-link a")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+            console.log("即将跳转到注册页面");
+          });
+      });
+    </script>
+  </body>
+</html>

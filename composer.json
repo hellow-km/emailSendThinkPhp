@@ -1,0 +1,6 @@
+{
+    "require": {
+        "topthink/framework": "8.x-dev",
+        "phpmailer/phpmailer": "^7.0"
+    }
+}

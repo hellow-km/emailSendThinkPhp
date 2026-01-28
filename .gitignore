@@ -1,0 +1,59 @@
+# ----------------------
+# 操作系统文件
+# ----------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ----------------------
+# 编辑器 / IDE 文件
+# ----------------------
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# ----------------------
+# Composer / vendor
+# ----------------------
+vendor/
+composer.lock
+
+# ----------------------
+# Node / 前端
+# ----------------------
+node_modules/
+dist/
+npm-debug.log
+yarn-error.log
+
+# ----------------------
+# ThinkPHP 临时文件
+# ----------------------
+runtime/
+*.log
+
+# ----------------------
+# 数据库备份 / 上传文件
+# ----------------------
+*.sql
+uploads/
+upload/
+attach/
+*.zip
+
+# ----------------------
+# 环境配置文件（如果敏感）
+# ----------------------
+.env
+.env.*
+config/app.php.local
+config/database.php.local
+config/*.local.php
+
+# ----------------------
+# 其他
+# ----------------------
+*.cache
+*.bak
+*.swp

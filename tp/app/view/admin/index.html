@@ -1,0 +1,969 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>用户日志管理</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Microsoft YaHei", Arial, sans-serif;
+        background-color: #f2f2f2;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      .container {
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      .page-header {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .page-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .card {
+        background: #fff;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+
+      .card-header {
+        padding: 15px 20px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .card-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .search-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-label {
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+      }
+
+      .form-control {
+        padding: 8px 12px;
+        border: 1px solid #dcdfe6;
+        border-radius: 4px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: #409eff;
+        box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        font-size: 14px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        gap: 5px;
+      }
+
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+
+      .btn-primary {
+        background-color: #409eff;
+        color: white;
+        border-color: #409eff;
+      }
+
+      .btn-primary:hover {
+        background-color: #66b1ff;
+        border-color: #66b1ff;
+      }
+
+      .btn-danger {
+        background-color: #f56c6c;
+        color: white;
+        border-color: #f56c6c;
+      }
+
+      .btn-danger:hover {
+        background-color: #f78989;
+        border-color: #f78989;
+      }
+
+      .btn-success {
+        background-color: #67c23a;
+        color: white;
+        border-color: #67c23a;
+      }
+
+      .btn-success:hover {
+        background-color: #85ce61;
+        border-color: #85ce61;
+      }
+
+      .btn-default {
+        background-color: #fff;
+        color: #606266;
+        border-color: #dcdfe6;
+      }
+
+      .btn-default:hover {
+        color: #409eff;
+        border-color: #c6e2ff;
+        background-color: #ecf5ff;
+      }
+
+      .table-container {
+        overflow-x: auto;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        font-size: 14px;
+      }
+
+      .data-table th {
+        background-color: #f8f9fa;
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: bold;
+        color: #333;
+        border-bottom: 2px solid #dee2e6;
+        white-space: nowrap;
+      }
+
+      .data-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #dee2e6;
+        vertical-align: middle;
+      }
+
+      .data-table tbody tr:hover {
+        background-color: #f8f9fa;
+      }
+
+      .data-table tbody tr.selected {
+        background-color: #ecf5ff;
+      }
+
+      .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+      }
+
+      .page-btn {
+        padding: 6px 12px;
+        margin: 0 2px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .page-btn:hover {
+        background-color: #f5f5f5;
+      }
+
+      .page-btn.active {
+        background-color: #409eff;
+        color: white;
+        border-color: #409eff;
+      }
+
+      .page-info {
+        margin: 0 15px;
+        color: #666;
+      }
+
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .modal.active {
+        display: flex;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: modalSlide 0.3s ease;
+      }
+
+      @keyframes modalSlide {
+        from {
+          opacity: 0;
+          transform: translateY(-50px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .modal-header {
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .modal-title {
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .modal-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #999;
+        padding: 5px;
+      }
+
+      .modal-close:hover {
+        color: #333;
+      }
+
+      .modal-body {
+        padding: 20px;
+      }
+
+      .modal-footer {
+        padding: 20px;
+        border-top: 1px solid #eee;
+        text-align: right;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px;
+        color: #999;
+      }
+
+      .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 5px;
+      }
+
+      .checkbox-cell {
+        text-align: center;
+        width: 50px;
+      }
+
+      .action-cell {
+        width: 150px;
+      }
+
+      @media (max-width: 768px) {
+        .search-form {
+          grid-template-columns: 1fr;
+        }
+
+        .card-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+        }
+
+        .data-table {
+          font-size: 13px;
+        }
+
+        .data-table th,
+        .data-table td {
+          padding: 8px 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- 页面标题 -->
+      <div class="page-header">
+        <h1 class="page-title">用户日志管理</h1>
+      </div>
+
+      <!-- 搜索卡片 -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">搜索条件</h2>
+        </div>
+        <div class="card-body">
+          <form id="searchForm" class="search-form">
+            <div class="form-group">
+              <label class="form-label">姓名</label>
+              <input
+                type="text"
+                name="name"
+                class="form-control"
+                placeholder="请输入姓名"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">邮箱</label>
+              <input
+                type="text"
+                name="email"
+                class="form-control"
+                placeholder="请输入邮箱"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">手机号</label>
+              <input
+                type="text"
+                name="phone"
+                class="form-control"
+                placeholder="请输入手机号"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">来源</label>
+              <input
+                type="text"
+                name="orign"
+                class="form-control"
+                placeholder="请输入来源"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">开始日期</label>
+              <input type="date" name="start_date" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">结束日期</label>
+              <input type="date" name="end_date" class="form-control" />
+            </div>
+          </form>
+          <div style="text-align: center; margin-top: 20px">
+            <button type="button" id="searchBtn" class="btn btn-primary">
+              搜索
+            </button>
+            <button type="reset" id="resetBtn" class="btn btn-default">
+              重置
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 数据表格卡片 -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">用户日志列表</h2>
+          <div>
+            <button
+              style="display: none"
+              id="addBtn"
+              class="btn btn-success btn-sm"
+            >
+              ➕ 添加
+            </button>
+            <button
+              style="display: none"
+              id="batchDeleteBtn"
+              class="btn btn-danger btn-sm"
+            >
+              🗑️ 批量删除
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-container">
+            <table class="data-table" id="dataTable">
+              <thead>
+                <tr>
+                  <th class="checkbox-cell">
+                    <input type="checkbox" id="selectAll" />
+                  </th>
+                  <th>ID</th>
+                  <th>姓名</th>
+                  <th>邮箱</th>
+                  <th>手机号</th>
+                  <th>来源</th>
+                  <th>创建时间</th>
+                  <th class="action-cell">操作</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <!-- 数据将通过JS动态加载 -->
+              </tbody>
+            </table>
+          </div>
+          <div id="loading" class="loading">加载中...</div>
+          <div id="noData" class="no-data" style="display: none">暂无数据</div>
+          <div class="pagination" id="pagination">
+            <!-- 分页将通过JS动态生成 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 添加/编辑模态框 -->
+    <div class="modal" id="editModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modalTitle">添加用户日志</h3>
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="editForm">
+            <input type="hidden" name="id" />
+            <div class="form-group" style="margin-bottom: 15px">
+              <label class="form-label">姓名</label>
+              <input
+                type="text"
+                name="name"
+                class="form-control"
+                required
+                placeholder="请输入姓名"
+              />
+            </div>
+            <div class="form-group" style="margin-bottom: 15px">
+              <label class="form-label">邮箱</label>
+              <input
+                type="email"
+                name="email"
+                class="form-control"
+                required
+                placeholder="请输入邮箱"
+              />
+            </div>
+            <div class="form-group" style="margin-bottom: 15px">
+              <label class="form-label">手机号</label>
+              <input
+                type="tel"
+                name="phone"
+                class="form-control"
+                required
+                placeholder="请输入手机号"
+              />
+            </div>
+            <div class="form-group" style="margin-bottom: 15px">
+              <label class="form-label">来源</label>
+              <input
+                type="text"
+                name="orign"
+                class="form-control"
+                placeholder="请输入来源"
+              />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" onclick="closeModal()">
+            取消
+          </button>
+          <button type="button" class="btn btn-primary" onclick="submitForm()">
+            提交
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 全局变量
+      let currentPage = 1;
+      const pageSize = 10;
+      let totalCount = 0;
+      let selectedIds = new Set();
+      let isLoading = false;
+
+      // API基础路径
+      const API_BASE = {
+        list: "/admin/list",
+        add: "/admin/add",
+        edit: "/admin/edit",
+        delete: "/admin/delete",
+        detail: "/admin/detail",
+      };
+
+      // 页面加载完成后初始化
+      document.addEventListener("DOMContentLoaded", function () {
+        // 绑定事件
+        document
+          .getElementById("searchBtn")
+          .addEventListener("click", searchData);
+        document
+          .getElementById("resetBtn")
+          .addEventListener("click", resetSearch);
+        document
+          .getElementById("addBtn")
+          .addEventListener("click", showAddModal);
+        document
+          .getElementById("batchDeleteBtn")
+          .addEventListener("click", batchDelete);
+        document
+          .getElementById("selectAll")
+          .addEventListener("change", toggleSelectAll);
+
+        // 加载初始数据
+        loadData();
+      });
+
+      // 加载数据
+      async function loadData() {
+        if (isLoading) return;
+
+        isLoading = true;
+        showLoading();
+
+        try {
+          const formData = new FormData(document.getElementById("searchForm"));
+          const params = new URLSearchParams();
+
+          // 添加搜索参数
+          for (let [key, value] of formData.entries()) {
+            if (value) params.append(key, value);
+          }
+
+          // 添加分页参数
+          params.append("page", currentPage);
+          params.append("limit", pageSize);
+
+          const response = await fetch(API_BASE.list, {
+            method: "POST",
+            body: params,
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          });
+
+          const data = await response.json();
+
+          if (data.code === 0) {
+            renderTable(data.data);
+            renderPagination(data.count);
+            totalCount = data.count;
+          } else {
+            showError("加载失败：" + data.msg);
+          }
+        } catch (error) {
+          console.error("加载数据错误:", error);
+          showError("网络请求失败");
+        } finally {
+          isLoading = false;
+          hideLoading();
+        }
+      }
+
+      // 搜索数据
+      function searchData() {
+        currentPage = 1;
+        selectedIds.clear();
+        document.getElementById("selectAll").checked = false;
+        loadData();
+      }
+
+      // 重置搜索
+      function resetSearch() {
+        document.getElementById("searchForm").reset();
+        searchData();
+      }
+
+      // 渲染表格
+      function renderTable(data) {
+        const tbody = document.getElementById("tableBody");
+
+        if (!data || data.length === 0) {
+          tbody.innerHTML = "";
+          document.getElementById("noData").style.display = "block";
+          return;
+        }
+
+        document.getElementById("noData").style.display = "none";
+
+        let html = "";
+        data.forEach((item) => {
+          const isSelected = selectedIds.has(item.id);
+          html += `
+                    <tr class="${isSelected ? "selected" : ""}">
+                        <td class="checkbox-cell">
+                            <input type="checkbox" 
+                                   class="row-checkbox" 
+                                   data-id="${item.id}"
+                                   ${isSelected ? "checked" : ""}
+                                   onchange="toggleRowSelection(${item.id}, this.checked)">
+                        </td>
+                        <td>${item.id}</td>
+                        <td>${escapeHtml(item.name || "")}</td>
+                        <td>${escapeHtml(item.email || "")}</td>
+                        <td>${escapeHtml(item.phone || "")}</td>
+                        <td>${escapeHtml(item.orign || "")}</td>
+                        <td>${item.create_time || ""}</td>
+                        <td class="action-cell">
+                            <div class="action-buttons">
+                                <button class="btn btn-danger btn-sm" onclick="deleteRecord(${item.id})">
+                                    删除
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+        });
+
+        tbody.innerHTML = html;
+      }
+
+      // 渲染分页
+      function renderPagination(total) {
+        const pagination = document.getElementById("pagination");
+        const totalPages = Math.ceil(total / pageSize);
+
+        if (totalPages <= 1) {
+          pagination.innerHTML = "";
+          return;
+        }
+
+        let html = "";
+
+        // 上一页
+        if (currentPage > 1) {
+          html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})">上一页</button>`;
+        }
+
+        // 页码
+        const startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, startPage + 4);
+
+        for (let i = startPage; i <= endPage; i++) {
+          html += `<button class="page-btn ${i === currentPage ? "active" : ""}" 
+                               onclick="goToPage(${i})">${i}</button>`;
+        }
+
+        // 下一页
+        if (currentPage < totalPages) {
+          html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})">下一页</button>`;
+        }
+
+        // 页面信息
+        html += `<div class="page-info">共 ${total} 条，第 ${currentPage}/${totalPages} 页</div>`;
+
+        pagination.innerHTML = html;
+      }
+
+      // 跳转到指定页
+      function goToPage(page) {
+        if (page === currentPage) return;
+        currentPage = page;
+        loadData();
+      }
+
+      // 显示添加模态框
+      function showAddModal() {
+        document.getElementById("modalTitle").textContent = "添加用户日志";
+        document.getElementById("editForm").reset();
+        document.getElementById("editModal").classList.add("active");
+      }
+
+      // 编辑记录
+      async function editRecord(id) {
+        try {
+          const response = await fetch(API_BASE.detail + "?id=" + id);
+          const data = await response.json();
+
+          if (data.code === 0) {
+            document.getElementById("modalTitle").textContent = "编辑用户日志";
+            const form = document.getElementById("editForm");
+            form.querySelector('[name="id"]').value = data.data.id;
+            form.querySelector('[name="name"]').value = data.data.name || "";
+            form.querySelector('[name="email"]').value = data.data.email || "";
+            form.querySelector('[name="phone"]').value = data.data.phone || "";
+            form.querySelector('[name="orign"]').value = data.data.orign || "";
+            document.getElementById("editModal").classList.add("active");
+          } else {
+            alert("获取数据失败：" + data.msg);
+          }
+        } catch (error) {
+          console.error("编辑错误:", error);
+          alert("网络请求失败");
+        }
+      }
+
+      // 关闭模态框
+      function closeModal() {
+        document.getElementById("editModal").classList.remove("active");
+      }
+
+      // 提交表单
+      async function submitForm() {
+        const form = document.getElementById("editForm");
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+
+        for (let [key, value] of formData.entries()) {
+          if (value) params.append(key, value);
+        }
+
+        // 表单验证
+        if (!form.querySelector('[name="name"]').value.trim()) {
+          alert("请输入姓名");
+          return;
+        }
+
+        if (!form.querySelector('[name="email"]').value.trim()) {
+          alert("请输入邮箱");
+          return;
+        }
+
+        if (!form.querySelector('[name="phone"]').value.trim()) {
+          alert("请输入手机号");
+          return;
+        }
+
+        const url = form.querySelector('[name="id"]').value
+          ? API_BASE.edit
+          : API_BASE.add;
+
+        // 如果是新增，添加创建时间
+        if (!form.querySelector('[name="id"]').value) {
+          params.append(
+            "create_time",
+            new Date().toISOString().slice(0, 19).replace("T", " "),
+          );
+        }
+
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            body: params,
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          });
+
+          const data = await response.json();
+
+          if (data.code === 0) {
+            alert(data.msg);
+            closeModal();
+            loadData();
+          } else {
+            alert("操作失败：" + data.msg);
+          }
+        } catch (error) {
+          console.error("提交错误:", error);
+          alert("网络请求失败");
+        }
+      }
+
+      // 删除记录
+      function deleteRecord(id) {
+        if (!confirm("确定要删除这条记录吗？")) return;
+
+        const params = new URLSearchParams();
+        params.append("id", id);
+
+        fetch(API_BASE.delete, {
+          method: "POST",
+          body: params,
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.code === 0) {
+              alert(data.msg);
+              loadData();
+            } else {
+              alert("删除失败：" + data.msg);
+            }
+          })
+          .catch((error) => {
+            console.error("删除错误:", error);
+            alert("网络请求失败");
+          });
+      }
+
+      // 全选/全不选
+      function toggleSelectAll() {
+        const isChecked = document.getElementById("selectAll").checked;
+        const checkboxes = document.querySelectorAll(".row-checkbox");
+
+        checkboxes.forEach((checkbox) => {
+          checkbox.checked = isChecked;
+          const id = parseInt(checkbox.dataset.id);
+          if (isChecked) {
+            selectedIds.add(id);
+          } else {
+            selectedIds.delete(id);
+          }
+        });
+
+        // 更新行样式
+        const rows = document.querySelectorAll("#tableBody tr");
+        rows.forEach((row) => {
+          if (isChecked) {
+            row.classList.add("selected");
+          } else {
+            row.classList.remove("selected");
+          }
+        });
+      }
+
+      // 切换行选择
+      function toggleRowSelection(id, checked) {
+        if (checked) {
+          selectedIds.add(id);
+        } else {
+          selectedIds.delete(id);
+          document.getElementById("selectAll").checked = false;
+        }
+
+        // 更新行样式
+        const row = document
+          .querySelector(`.row-checkbox[data-id="${id}"]`)
+          .closest("tr");
+        if (checked) {
+          row.classList.add("selected");
+        } else {
+          row.classList.remove("selected");
+        }
+      }
+
+      // 批量删除
+      function batchDelete() {
+        if (selectedIds.size === 0) {
+          alert("请先选择要删除的记录");
+          return;
+        }
+
+        if (!confirm(`确定要删除选中的 ${selectedIds.size} 条记录吗？`)) return;
+
+        const params = new URLSearchParams();
+        params.append("id", Array.from(selectedIds));
+
+        fetch(API_BASE.delete, {
+          method: "POST",
+          body: params,
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.code === 0) {
+              alert(data.msg);
+              selectedIds.clear();
+              document.getElementById("selectAll").checked = false;
+              loadData();
+            } else {
+              alert("删除失败：" + data.msg);
+            }
+          })
+          .catch((error) => {
+            console.error("批量删除错误:", error);
+            alert("网络请求失败");
+          });
+      }
+
+      // 显示加载中
+      function showLoading() {
+        document.getElementById("loading").style.display = "flex";
+      }
+
+      // 隐藏加载中
+      function hideLoading() {
+        document.getElementById("loading").style.display = "none";
+      }
+
+      // 显示错误
+      function showError(message) {
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; color: #f56c6c; padding: 40px;">
+                        ${escapeHtml(message)}
+                    </td>
+                </tr>
+            `;
+        document.getElementById("pagination").innerHTML = "";
+      }
+
+      // HTML转义
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    </script>
+  </body>
+</html>

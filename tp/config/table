@@ -1,0 +1,8 @@
+CREATE TABLE user_log (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(50),
+  email VARCHAR(100),
+  phone VARCHAR(20),
+  orign VARCHAR(50),
+  create_time DATETIME
+);
